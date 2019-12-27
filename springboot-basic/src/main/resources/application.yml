@@ -1,0 +1,7 @@
+sys:
+  name: "springboot-study"
+  userList:
+    - userId: 1
+      userName: "eugene1"
+    - userId: 2
+      userName: "eugene2"
