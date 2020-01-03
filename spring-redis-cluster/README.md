@@ -4,7 +4,11 @@
 [https://docs.spring.io/spring-data/data-redis/docs/current/reference/html](https://docs.spring.io/spring-data/data-redis/docs/current/reference/html)
 
 
-### 二、遇到的问题
+## 二、redis-cluster 集群搭建
+
+* 这块比较简单, 后面将写一篇博客来总结**redis-cluster**集群的搭建以及原理
+
+## 三、遇到的问题
 
 * 只导入如下包:
   ```xml
