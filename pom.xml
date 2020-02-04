@@ -14,6 +14,7 @@
     <modules>
         <module>springboot-basic</module>
         <module>spring-redis-cluster</module>
+        <module>springboot-websocket</module>
     </modules>
 
     <groupId>com.eugene.sumarry</groupId>
