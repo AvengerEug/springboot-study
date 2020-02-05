@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.util.HtmlUtils;
 
 @Controller
-public class GreetingController {
+public class MessageController {
 
 
 	@MessageMapping("/hello")
 	@SendTo("/topic/greetings")
-	public Greeting greeting(HelloMessage message) throws Exception {
-		return new Greeting(HtmlUtils.htmlEscape(message.getName()) + "!");
+	public String message(String message) throws Exception {
+		return HtmlUtils.htmlEscape(message) + "!";
 	}
 
 }

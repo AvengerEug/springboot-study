@@ -7,6 +7,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+/**
+ * 官网推荐的跨域解决方案:
+ * 官网博客:
+ * https://spring.io/blog/2015/06/08/cors-support-in-spring-framework
+ */
 @Configuration
 public class MyWebMvcConfig {
 
