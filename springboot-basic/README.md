@@ -286,6 +286,22 @@
 
 4. 其他模块依赖这两个模块，并在yml文件进行配置, 如下图: 
 
+   ![auto-config](https://github.com/AvengerEug/springboot-study/blob/develop/springboot-basic/yml-autoconfig.png)
+
+5. 遇到的问题:
+
+   * **Q:idea中没有上图的提示**
+   * `A:我是将自动装配的那两个模块install到本地maven仓库后就提示了。。`然后[官网推荐(点此查看)](https://docs.spring.io/spring-boot/docs/2.0.4.RELEASE/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor)`是要添加**spring-boot-configuration-processor**模块`
+   * **Q: pom文件不知道添加哪些依赖**
+   * `A: 因为要添加自动装配，所以必须要依赖spring-boot-autoconfigure模块，其次要想在idea中的yml文件中有提示，则需要添加spring-boot-configuration-processor模块。 最后因为要有spring的功能，比如将这个配置类添加到spring容器中，所以还需要添加spring-context模块`
+   * **Q: 为什么每个依赖的scope都要加provided**
+   * `A: 这个主要看项目而定，因为我的测试项目中有springboot的环境，而springboot环境中默认存在上述的几个依赖，为了不让jar包冲突，所以就将scope设置成provided了。即默认项目中已经存在这些jar包了`
+   
+6. 原理
+
+   * by-annotation原理: **其实很简单，就是将加了@ConfigurationProperties注解的配置类添加到spring容器中即可。但是呢，springboot项目启动时，@SpringBootApplication注解默认是扫描当前启动类所在的包及其子包的。作为第三方jar包，因为存在包名不一致的问题，所以使用传统的@Component注解会行不通。所以我们可以用spring的一些扩展点来添加第三方jar包的配置类。可是哪一个扩展点是可以将第三方的类导入到当前spring环境中呢？1. 使用后置处理器BeanPostProcessor？ => 这种方式不可行，因为要修改集成方的代码，集成方工作量大，要是我遇到这种第三方的jar包，那我会吐槽的！ 但是呢，好像必须要让集成方做点什么才能把jar包集成进去，比如spring提供的aop，我们使用@EnableAspectJAutoProxy注解就可以动态开启aop功能。利用这个思路，最终我们定位到了spring的@Import注解，它可以将一个类添加到spring环境中去。所以最终，我设计了@EnableEugeneByAnnotationProperties注解，最终将配置类添加到了spring容器中去**
+   * by-spring-factories原理: **具体原理跟上述一直，总而言之就是将被加了@ConfigurationProperties注解的配置类添加到spring容器中去。在springboot中，存在spring.factories文件，在里面配置一些类也会被加到spring容器中去，所以最终产生了这种方式来添加第三方bean至spring容器**
+
    
 
    
