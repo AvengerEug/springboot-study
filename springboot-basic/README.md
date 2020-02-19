@@ -85,7 +85,212 @@
 
 ## 二、自动装配
 
-## 三、实现自定义starter
+### 2.1 实现步骤
+
+1. 添加实体配置类
+
+   ```java
+   @Component
+   @ConfigurationProperties("sys")
+   public class UserProperties {
+   
+       private String name;
+       private List<User> userList = new ArrayList<>();
+   
+       public String getName() {
+           return name;
+       }
+   
+       public void setName(String name) {
+           this.name = name;
+       }
+   
+       public List<User> getUserList() {
+           return userList;
+       }
+   
+       public void setUserList(List<User> userList) {
+           this.userList = userList;
+       }
+   
+       @Override
+       public String toString() {
+           return "UserProperties{" +
+                   "name='" + name + '\'' +
+                   ", userList=" + userList +
+                   '}';
+       }
+   }
+   ```
+
+2. 添加@ConfigurationProperties(prefix = "sys")注解，标明此类为配置类，并配置的前缀叫sys，如下:
+
+   ```yml
+   sys:
+     name: "springboot-study"
+     userList:
+       - userId: 1
+         userName: "eugene1"
+       - userId: 2
+         userName: "eugene2"
+   ```
+
+3. 添加@Component注解，为了将此类加入到spring容器中去
+
+4. 最终此类被自动配置进去了
+
+### 2.2 存在的问题
+
+* idea中没法提示自己自定义的配置类，具体原因待确认。按照[官网的推荐方法: https://docs.spring.io/spring-boot/docs/2.0.4.RELEASE/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor](https://docs.spring.io/spring-boot/docs/2.0.4.RELEASE/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor)也无作用，我认为在springboot中这么设置也没有啥用，因为依赖了spring-boot-parent模块，在此模块中它依赖了**spring-boot-auto-configuration**模块
+
+## 三、实现自定义auto-configure模块
+
+1. 通过注解(by-annotation)的方式引入自定义auto-configure模块(eugene-spring-boot-autoconfigure-by-annotation)
+
+   * EugeneByAnnotationProperties.java
+
+     ```java
+     @ConfigurationProperties(prefix = "eugene-by-annotation")
+     public class EugeneByAnnotationProperties {
+     
+         private String name;
+         private Integer age;
+         private Boolean isMan;
+     
+         public String getName() {
+             return name;
+         }
+     
+         public void setName(String name) {
+             this.name = name;
+         }
+     
+         public Integer getAge() {
+             return age;
+         }
+     
+         public void setAge(Integer age) {
+             this.age = age;
+         }
+     
+         public Boolean getMan() {
+             return isMan;
+         }
+     
+         public void setMan(Boolean man) {
+             isMan = man;
+         }
+     
+         @Override
+         public String toString() {
+             return "EugeneByAnnotationProperties{" +
+                     "name='" + name + '\'' +
+                     ", age=" + age +
+                     ", isMan=" + isMan +
+                     '}';
+         }
+     }
+     ```
+
+   * EnableEugeneByAnnotationProperties.java\
+
+     ```java
+     @Target(ElementType.TYPE)
+     @Retention(RetentionPolicy.RUNTIME)
+     @Import(EugeneByAnnotationProperties.class)
+     public @interface EnableEugeneByAnnotationProperties {
+     }
+     ```
+
+2. 通过spring.factorires文件的方式引入自定义auto-configure模块(eugene.spring-boot-autoconfigure-by-springfactories)
+
+   * 在resources文件夹下添加该文件`META-INF/spring.factories`, 并在spring.factories文件中添加如下内容: 
+
+     ```properties
+     # Auto Configure
+     org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+     com.eugene.sumarry.autoconfigure.byspringfactories.EugeneBySpringFactoriesProperties
+     ```
+
+   * EugeneBySpringFactoriesProperties.java文件
+
+     ```java
+     @EnableConfigurationProperties
+     @ConfigurationProperties(prefix = "eugene-by-spring-factories")
+     public class EugeneBySpringFactoriesProperties {
+     
+         private String name;
+         private Integer age;
+         private Boolean isMan;
+     
+         public String getName() {
+             return name;
+         }
+     
+         public void setName(String name) {
+             this.name = name;
+         }
+     
+         public Integer getAge() {
+             return age;
+         }
+     
+         public void setAge(Integer age) {
+             this.age = age;
+         }
+     
+         public Boolean getMan() {
+             return isMan;
+         }
+     
+         public void setMan(Boolean man) {
+             isMan = man;
+         }
+     
+         @Override
+         public String toString() {
+             return "EugeneBySpringFactoriesProperties{" +
+                     "name='" + name + '\'' +
+                     ", age=" + age +
+                     ", isMan=" + isMan +
+                     '}';
+         }
+     }
+     ```
+
+3. 各自模块的pom.xml文件中添加如下依赖:
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-context</artifactId>
+       <version>5.0.9.RELEASE</version>
+       <scope>provided</scope>
+   </dependency>
+   
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-autoconfigure</artifactId>
+       <version>2.0.4.RELEASE</version>
+       <scope>provided</scope>
+   </dependency>
+   
+   <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-configuration-processor -->
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-configuration-processor</artifactId>
+       <version>2.0.4.RELEASE</version>
+       <scope>provided</scope>
+   </dependency>
+   ```
+
+4. 其他模块依赖这两个模块，并在yml文件进行配置, 如下图: 
+
+   
+
+   
+
+
 
 ## 四、@Conditionl注解即其他条件注解总结
 

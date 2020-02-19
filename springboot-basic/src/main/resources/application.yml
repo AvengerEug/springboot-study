@@ -5,3 +5,16 @@ sys:
       userName: "eugene1"
     - userId: 2
       userName: "eugene2"
+
+eugene-by-annotation:
+  man: true
+  age: 11
+  name: "avengerEug-by-annotation"
+
+eugene-by-spring-factories:
+  man: false
+  age: 24
+  name: "avengerEug-by-spring-factories"
+
+
+

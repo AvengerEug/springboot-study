@@ -16,6 +16,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.eugene.sumarry</groupId>
+            <artifactId>eugene-spring-boot-autoconfigure-by-annotation</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.eugene.sumarry</groupId>
+            <artifactId>eugene.spring-boot-autoconfigure-by-springfactories</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>

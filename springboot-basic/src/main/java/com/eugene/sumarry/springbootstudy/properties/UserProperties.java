@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@ConfigurationProperties("sys")
+@ConfigurationProperties(prefix = "sys")
 public class UserProperties {
 
     private String name;
