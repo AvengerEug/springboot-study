@@ -302,11 +302,10 @@
    * by-annotation原理: **其实很简单，就是将加了@ConfigurationProperties注解的配置类添加到spring容器中即可。但是呢，springboot项目启动时，@SpringBootApplication注解默认是扫描当前启动类所在的包及其子包的。作为第三方jar包，因为存在包名不一致的问题，所以使用传统的@Component注解会行不通。所以我们可以用spring的一些扩展点来添加第三方jar包的配置类。可是哪一个扩展点是可以将第三方的类导入到当前spring环境中呢？1. 使用后置处理器BeanPostProcessor？ => 这种方式不可行，因为要修改集成方的代码，集成方工作量大，要是我遇到这种第三方的jar包，那我会吐槽的！ 但是呢，好像必须要让集成方做点什么才能把jar包集成进去，比如spring提供的aop，我们使用@EnableAspectJAutoProxy注解就可以动态开启aop功能。利用这个思路，最终我们定位到了spring的@Import注解，它可以将一个类添加到spring环境中去。所以最终，我设计了@EnableEugeneByAnnotationProperties注解，最终将配置类添加到了spring容器中去**
    * by-spring-factories原理: **具体原理跟上述一直，总而言之就是将被加了@ConfigurationProperties注解的配置类添加到spring容器中去。在springboot中，存在spring.factories文件，在里面配置一些类也会被加到spring容器中去，所以最终产生了这种方式来添加第三方bean至spring容器**
 
-   
-
-   
-
-
-
 ## 四、@Conditionl注解即其他条件注解总结
 
+|           类型            |                         含义                          |                             例子                             |
+| :-----------------------: | :---------------------------------------------------: | :----------------------------------------------------------: |
+|    @ConditionalOnBean     |          表示当某个bean存在后才处理当前bean           | 比如mybati的自动配置类: MybatisAutoConfiguration. 该类添加了@ConditionalOnBean(DataSource.class)注解，即表示当有数据源这个bean时才处理MybatisAutoConfiguration这个bean |
+|    @ConditionalOnClass    | 表示当某个类存在(在classpath中找得到)时才处理当前bean | 比如mybati的自动配置类: MybatisAutoConfiguration。该类添加了@ConditionalOnClass({ SqlSessionFactory.class, SqlSessionFactoryBean.class })。表示当classpath中有这两个类时菜处理这个bean |
+| @ConditionalOnMissingBean |          表示当spring环境中无某个类时才处理           | @ConditionalOnMissingBean注解中若没有传class进去，那么则默认认为无当前bean时才处理。eg:@Bean @ConditionalOnMissingBean public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory){....}. 则表示，spring容器中无SqlSessionTemplate这个类型的bean时才执行这个方法 |
