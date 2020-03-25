@@ -291,7 +291,7 @@
 5. 遇到的问题:
 
    * **Q:idea中没有上图的提示**
-   * `A:我是将自动装配的那两个模块install到本地maven仓库后就提示了。。`然后[官网推荐(点此查看)](https://docs.spring.io/spring-boot/docs/2.0.4.RELEASE/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor)`是要添加**spring-boot-configuration-processor**模块`
+   * `A:我是将自动装配的那两个模块install到本地maven仓库后就提示了(idea还需要装spring assistant插件)。。`然后[官网推荐(点此查看)](https://docs.spring.io/spring-boot/docs/2.0.4.RELEASE/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor)`是要添加**spring-boot-configuration-processor**模块`
    * **Q: pom文件不知道添加哪些依赖**
    * `A: 因为要添加自动装配，所以必须要依赖spring-boot-autoconfigure模块，其次要想在idea中的yml文件中有提示，则需要添加spring-boot-configuration-processor模块。 最后因为要有spring的功能，比如将这个配置类添加到spring容器中，所以还需要添加spring-context模块`
    * **Q: 为什么每个依赖的scope都要加provided**
