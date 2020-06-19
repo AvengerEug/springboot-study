@@ -3,6 +3,27 @@
 ## 一、启动流程
 ### 1.1 tomcat启动时间
 
+* 验证当前springboot属于哪种应用：`NONE`、`SERVLET`、`REACTIVE`。在此方法中用来确定当前是属于哪种应用(判断classpath中是否存在对应的标识性的类，eg：如果不包含javax.servlet.Servlet、和org.springframework.web.context.ConfigurableWebApplicationContext则表示当前springboot应用就是一个普通的spring应用)
+
+  ```java
+  //org.springframework.boot.SpringApplication#deduceWebApplicationType
+  
+  private WebApplicationType deduceWebApplicationType() {
+      if (ClassUtils.isPresent(REACTIVE_WEB_ENVIRONMENT_CLASS, null)
+          && !ClassUtils.isPresent(MVC_WEB_ENVIRONMENT_CLASS, null)
+          && !ClassUtils.isPresent(JERSEY_WEB_ENVIRONMENT_CLASS, null)) {
+          return WebApplicationType.REACTIVE;
+      }
+      for (String className : WEB_ENVIRONMENT_CLASSES) {
+          if (!ClassUtils.isPresent(className, null)) {
+              return WebApplicationType.NONE;
+          }
+      }
+      return WebApplicationType.SERVLET;
+  }
+  
+  ```
+
 * org.springframework.boot.SpringApplication#refreshContext(ConfigurableApplicationContext context)
 
   刷新上下文(当前传入的context的类型为**AnnotationConfigServletWebServerApplicationContext**), 内部执行了refresh方法, 如下： 
@@ -14,7 +35,7 @@
   }
   ```
   
-  虽然它把传入的类强转成AbstractApplicationContext类型了，但是最终执行的还是AnnotationConfigServletWebServerApplicationContext类的refresh方法. 最终执行父类AbstractApplicationContext的refresh方法。在父类的refresh方法就是在初始化spring上下文环境. 当执行到onRefresh方法时, 因为调用链的起始对象为子类。所以父类和子类的onRefresh方法都会被执行到。springboot在此(AnnotationConfigServletWebServerApplicationContext类的onRefresh方法)对tomcat进行了初始化. 最终在子类ServletWebServerApplicationContext中的createWebServer方法中(org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext#createWebServer)中启动了tomcat
+  虽然它把传入的类强转成AbstractApplicationContext类型了，但是最终执行的还是AnnotationConfigServletWebServerApplicationContext类的refresh方法. 最终执行父类AbstractApplicationContext的refresh方法。在父类的refresh方法就是在初始化spring上下文环境. 当执行到onRefresh方法时, 因为调用链的起始对象为子类。springboot在此(AnnotationConfigServletWebServerApplicationContext类的onRefresh方法)对tomcat进行了初始化. 最终在子类ServletWebServerApplicationContext中的createWebServer方法中(org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext#createWebServer)中启动了tomcat
 
 ### 1.2 DispatcherServlet类何时被初始化
 1. 启动tomcat时需要获取一个类型为**ServletWebServerFactory**的工厂类来创建web server(源码是根据type来获取bean的). 最终获取的类为TomcatServletWebServerFactory。因为此bean是在**CloudFoundryCustomContextPathExample** 类中被添加到spring bean工厂去的(通过@Bean的方式)。最终根据type获取的bean name，此时只有这一个(TomcatServletWebServerFactory)类
