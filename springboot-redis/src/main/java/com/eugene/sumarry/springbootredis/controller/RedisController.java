@@ -1,6 +1,7 @@
-package com.eugene.sumarry.springrediscluster.controller;
+package com.eugene.sumarry.springbootredis.controller;
 
-import com.eugene.sumarry.springrediscluster.service.RedisService;
+import com.eugene.sumarry.springbootredis.service.GoodsService;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,17 +13,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class RedisController {
 
     @Autowired
-    private RedisService redisService;
+    private RedissonClient redissonClient;
 
     @GetMapping("/add")
     public void add(@RequestParam(name = "key") String key, @RequestParam(name = "value") String value) {
-        redisService.add(key, value);
+        redissonClient.getBucket(key).set(value);
     }
 
 
     @GetMapping("/get")
     public Object get(@RequestParam(name = "key") String key) {
-        return redisService.get(key);
+        return redissonClient.getBucket(key).get();
     }
 
 

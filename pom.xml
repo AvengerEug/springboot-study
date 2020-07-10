@@ -13,7 +13,7 @@
 
     <modules>
         <module>springboot-basic</module>
-        <module>spring-redis-cluster</module>
+        <module>springboot-redis</module>
         <module>springboot-websocket</module>
         <module>auto-configure</module>
     </modules>

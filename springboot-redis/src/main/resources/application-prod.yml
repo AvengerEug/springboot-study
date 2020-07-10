@@ -1,0 +1,19 @@
+spring:
+  profiles:
+    active: local
+  redis:
+    redisson:
+      config: classpath:redisson-prod.yaml
+  datasource:
+    url: jdbc:mysql://192.168.111.145/redisStudy?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true
+    username: root
+    password: root
+    driverClassName: com.mysql.jdbc.Driver
+
+#########################
+mybatis:
+  mapper-locations: classpath:mappers/*Mapper.xml
+  type-aliases-package: com.eugene.sumarry.springbootredis.model
+  type-handlers-package: com.eugene.sumarry.springbootredis.typeHandler
+  configuration:
+    cache-enabled: true

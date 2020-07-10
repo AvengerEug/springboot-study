@@ -6,6 +6,7 @@ import com.eugene.sumarry.autoconfigure.byspringfactories.EugeneBySpringFactorie
 import com.eugene.sumarry.springbootstudy.properties.UserProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @EnableEugeneByAnnotationProperties
