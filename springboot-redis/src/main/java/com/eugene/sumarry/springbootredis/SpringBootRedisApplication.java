@@ -6,9 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan("com.eugene.sumarry.springbootredis.dao")
-public class SpringRedisClusterApplication {
+public class SpringBootRedisApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringRedisClusterApplication.class, args);
+        SpringApplication.run(SpringBootRedisApplication.class, args);
     }
 }

@@ -1,16 +1,10 @@
 spring:
-  profiles:
-    active: local
   redis:
-    database: 0
-    host: 192.168.111.145
-    port: 6379
-    password:
     redisson:
       config: classpath:redisson-local.yaml
 
   datasource:
-    url: jdbc:mysql://192.168.111.145/redisStudy?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true
+    url: jdbc:mysql://192.168.220.132/redisStudy?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true
     username: root
     password: root
     driverClassName: com.mysql.jdbc.Driver

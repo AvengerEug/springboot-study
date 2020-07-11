@@ -27,7 +27,16 @@ public class CacheCTAOP {
     @Autowired
     private GoodsDao goodsDao;
 
-    private final BloomFilter<Long> bloomFilter = BloomFilter.create(Funnels.longFunnel(), 100, 0.01);
+    private static final BloomFilter<Long> bloomFilter = BloomFilter.create(Funnels.longFunnel(), 50000);
+
+
+    public static void main(String[] args) {
+        for (int i = 1; i <= 50000; i++) {
+            bloomFilter.put(Long.valueOf(i));
+        }
+
+        System.out.println(bloomFilter.mightContain(200000L));
+    }
 
     @PostConstruct
     private void populateGoodsBloomFilter() {
@@ -69,7 +78,7 @@ public class CacheCTAOP {
     }
 
     @Around("pointcutAnnotation()")
-    public Object beforePointcutAnnotation(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    public Object aroundPointcutAnnotation(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         // 获取切点的所有参数，第一个参数为商品ID
         Object[] args = proceedingJoinPoint.getArgs();
         if (args == null || args.length < 0) {

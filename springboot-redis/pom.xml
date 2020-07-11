@@ -54,13 +54,6 @@
             <version>23.0</version>
         </dependency>
 
-        <!-- 引入工具包，可以将map转换成java bean -->
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.9.3</version>
-        </dependency>
-
     </dependencies>
 
     <build>
