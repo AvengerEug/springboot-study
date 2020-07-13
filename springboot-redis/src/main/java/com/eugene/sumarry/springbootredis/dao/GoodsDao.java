@@ -14,4 +14,8 @@ public interface GoodsDao {
 
     List<Long> fetchIdByPagination(@Param("offset") Long offset, @Param("pageSize") Long pageSize);
 
+    void reduceGoods(Long goodsId);
+
+    Long getCountById(Long goodsId);
+
 }

@@ -29,4 +29,12 @@
         SELECT goods_id FROM goods LIMIT #{offset}, #{pageSize}
     </select>
 
+    <update id="reduceGoods" parameterType="long">
+        UPDATE goods SET count = count - 1 WHERE goods_id = #{goodsId}
+    </update>
+
+    <select id="getCountById" parameterType="long" resultType="long">
+        SELECT count FROM goods WHERE goods_id = #{goodsId}
+    </select>
+
 </mapper>

@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: local
   redis:
     redisson:
       config: classpath:redisson-prod.yaml

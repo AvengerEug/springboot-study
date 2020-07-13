@@ -4,7 +4,7 @@ spring:
       config: classpath:redisson-local.yaml
 
   datasource:
-    url: jdbc:mysql://192.168.220.132/redisStudy?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true
+    url: jdbc:mysql://192.168.111.145/redisStudy?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true
     username: root
     password: root
     driverClassName: com.mysql.jdbc.Driver
@@ -16,3 +16,7 @@ mybatis:
   type-handlers-package: com.eugene.sumarry.springbootredis.typeHandler
   configuration:
     cache-enabled: true
+
+server:
+  tomcat:
+    max-threads: 20000

@@ -20,7 +20,9 @@ singleServerConfig:
   dnsMonitoringInterval: 5000
   #dnsMonitoring: false
 
+# 线程池数量 = 当前处理核数量 * 2
 threads: 0
+# Netty线程池数量 = 当前处理核数量 * 2
 nettyThreads: 0
 codec:
   class: "org.redisson.codec.JsonJacksonCodec"

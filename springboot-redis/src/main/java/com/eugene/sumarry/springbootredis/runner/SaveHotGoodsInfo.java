@@ -28,6 +28,7 @@ public class SaveHotGoodsInfo implements ApplicationRunner {
         cache.fastPut("id", goods.getGoodsId());
         cache.fastPut("name", goods.getName());
         cache.fastPut("count", goods.getCount());
+        // 此处模拟10s后过期，因为这个key不是作为分布式锁的key，所以不需要担心程序在此处挂了导致死锁的问题。
         cache.expire(10, TimeUnit.SECONDS);
 
     }

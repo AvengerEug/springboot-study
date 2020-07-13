@@ -1,6 +1,7 @@
 package com.eugene.sumarry.springbootredis.service.impl;
 
 import com.eugene.sumarry.springbootredis.anno.CacheCT;
+import com.eugene.sumarry.springbootredis.anno.RedisDistributedLock;
 import com.eugene.sumarry.springbootredis.dao.GoodsDao;
 import com.eugene.sumarry.springbootredis.model.Goods;
 import com.eugene.sumarry.springbootredis.service.GoodsService;
@@ -8,6 +9,7 @@ import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class GoodsServiceImpl implements GoodsService {
@@ -40,4 +42,23 @@ public class GoodsServiceImpl implements GoodsService {
 
         return goodsDao.getById(goodsId);
     }
+
+    /**
+     * 秒杀逻辑，
+     * 使用redis锁来实现同步
+     * @param goodsId
+     */
+    @Override
+    @RedisDistributedLock("goodsDistributedLock")
+    public boolean reduceGoods(Long goodsId) {
+
+        // 拿到锁再去查询DB, 看是否库存充足
+        if (goodsDao.getCountById(goodsId) > 0) {
+            goodsDao.reduceGoods(goodsId);
+        }
+
+        return true;
+    }
+
+
 }

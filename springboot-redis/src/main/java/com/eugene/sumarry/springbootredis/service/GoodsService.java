@@ -7,4 +7,7 @@ public interface GoodsService {
     Goods getCacheCT(Long goodsId);
 
     Goods getCacheJC(Long goodsId);
+
+    boolean reduceGoods(Long goodsId);
+
 }
