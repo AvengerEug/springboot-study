@@ -4,7 +4,7 @@
 <!-- 命名空间为MapperScan注解指定的扫描路径 + 接口名 -->
 <mapper namespace="com.eugene.sumarry.springbootredis.dao.GoodsDao">
 
-    <resultMap type="Goods" id="goodsMap">
+    <resultMap type="com.eugene.sumarry.springbootredis.model.Goods" id="goodsMap">
         <id column="goods_id" property="goodsId"/>
         <result column="name" property="name"/>
         <result column="count" property="count"/>
@@ -14,14 +14,14 @@
         goods_id, name, count
     </sql>
 
-    <select id="getById" parameterType="Long" resultMap="goodsMap">
+    <select id="getById" parameterType="java.lang.Long" resultMap="goodsMap">
         SELECT
           <include refid="fields"/>
         FROM goods
         WHERE goods_id = #{goodsId}
     </select>
 
-    <select id="count" resultType="Long">
+    <select id="count" resultType="java.lang.Long">
         SELECT COUNT(*) FROM goods
     </select>
 
