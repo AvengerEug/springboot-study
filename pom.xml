@@ -16,6 +16,7 @@
         <module>springboot-redis</module>
         <module>springboot-websocket</module>
         <module>auto-configure</module>
+        <module>springboot-clickhouse</module>
     </modules>
 
     <groupId>com.eugene.sumarry</groupId>

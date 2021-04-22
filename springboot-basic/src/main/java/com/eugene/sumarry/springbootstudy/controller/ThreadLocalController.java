@@ -29,4 +29,12 @@ public class ThreadLocalController {
 
         return map;
     }
+
+    @GetMapping("/hello")
+    public Map<String, Boolean> hello() {
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("1", true);
+        map.put("2", false);
+        return map;
+    }
 }
