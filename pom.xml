@@ -17,6 +17,7 @@
         <module>springboot-websocket</module>
         <module>auto-configure</module>
         <module>springboot-clickhouse</module>
+        <module>springboot-multikafka</module>
     </modules>
 
     <groupId>com.eugene.sumarry</groupId>
