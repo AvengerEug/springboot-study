@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-//@MapperScan("com.eugene.sumarry.clickhouse.dao")
+@MapperScan("com.eugene.sumarry.clickhouse.curd.dao")
 public class ClickHouseApplication {
 
     public static void main(String[] args) {
