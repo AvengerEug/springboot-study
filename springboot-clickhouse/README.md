@@ -34,8 +34,9 @@
     
     将在tmp_my_database数据库中创建user表，其中包含id、userName、aliasName、createTime四个字段，其中使用到的引擎为**合并树（最常用的一个）**，按照createTime进行分区，分区内的数据排序规则默认使用userName进行排序（**ps：后续如果可能有多个排序规则的话，可以都填写到order by里面，这样可以提高排序的查询效率。假设修改成 ORDER BY (userName, aliasName)，那么最终在每个分区中先按照userName排序，如果userName相同，再使用aliasName排序**）。指定了id为主键，最终会根据id字段生成一级索引，用于加速表查询。
     
-## 关于使用jdbc操作clickhouse的insert操作的建议
+## 关于使用jdbc操作clickhouse建议
 * 在clickhouse中，不建议每次直接插入一条数据。在每次插入数据时，clickhouse内部为了让查询变得更快，内部都会做一些额外处理（比如：MergeTree引擎的表需要合并数据），而这些额外处理是非常耗时的，clickhouse的insert操作的qps只能达到千级。因此，不建议直接insert数据
+* 在clickhouse中，不建议使用update和delete操作。首先，在clickhouse中，update和delete操作都是alter语句的变种，与我们传统的关系型数据库的update、delete语法不一致。其次，因为它是alter语句的变种，所以在clickhouse中执行update和delete操作比较耗性能。最后，如果实在要使用clickhouse的update和delete语句时，不能直接使用mybatis-plus提供的updateById和update api，因为他们底层的语法都不一致，会报错，如果实在要用，则可以在xml中编写clickhouse识别的update和delete语句，同时还有一个关注点就是：**分区键和主键不能被更新，如果涉及到这两个字段的更新的话，clickhouse会报错**
 
 ## 外部存储引擎 - kafka引擎
 
@@ -62,8 +63,8 @@
   ) ENGINE = Kafka()
   SETTINGS
     kafka_broker_list = 'localhost:9092',
-    kafka_topic_lise = 'sales-queue',
-    kafka_groupt_name = 'chgroup',
+    kafka_topic_list = 'sales-queue',
+    kafka_group_name = 'chgroup',
     kafka_format = 'JSONEachRow'
     
   这表示，只要kafka的sales-queue的topic有数据接入，那么就会clickhouse就会把这个数据保存到kafka_test表中。
@@ -84,8 +85,8 @@
   >    ) ENGINE = Kafka()
   >    SETTINGS
   >      kafka_broker_list = 'localhost:9092',
-  >      kafka_topic_lise = 'sales-queue',
-  >      kafka_groupt_name = 'chgroup',
+  >      kafka_topic_list = 'sales-queue',
+  >      kafka_group_name = 'chgroup',
   >      kafka_format = 'JSONEachRow'
   >    ```
   >
@@ -105,10 +106,20 @@
   >
   >    ```shell
   >    # 创建一张物化视图，用于将数据从kafka_queue同步到kafka_table:
-  >    CREATE MATERIALIZED VIEW consumer TO kafka_table AS SELECT id, code, name FROM kafka_queue
+  >    CREATE MATERIALIZED VIEW consumer TO kafka_table AS SELECT id, code, name FROM kafka_test
   >    ```
 
-  完成上述3个操作后，最终我们可以将kafka的数据保存到kafka_table表中，也不会存在查询一次数据就丢失的情况了。
+  完成上述3个操作后，最终我们可以将kafka的数据保存到kafka_table表中，也不会存在查询一次数据就丢失的情况了。详细步骤可看**com.eugene.sumarry.clickhouse.ClickhouseKafkaEngineTest**单元测试类，测试步骤：
+  
+  ```txt
+  1、启动com.eugene.sumarry.clickhouse.ClickhouseKafkaEngineTest#test单元测试
+  2、启动com.eugene.sumarry.clickhouse.ClickhouseKafkaEngineTest#sendMsg单元测试，向kafka发送消息
+  ```
+  
+  几个注意事项：
+  
+  1. 需要保证clickhouse服务器能访问到kafka服务器
+  2. mybatis中要使用$符号获取参数，使用#获取不到参数
 
 ## MergeTree引擎原理
 
