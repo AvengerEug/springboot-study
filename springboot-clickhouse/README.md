@@ -5,7 +5,7 @@
 
 * 在clickhouse命令行中执行如下命令创建数据库语句：
     ```shell script
-      CREATE DATABASE IF NOT EXISTS tmp_my_database;
+    CREATE DATABASE IF NOT EXISTS tmp_my_database;
     ```
     
 * 同时，可以使用如下语句删除数据库：
@@ -166,3 +166,178 @@
   >    ```
   >
   >    通常情况下不会修改此参数
+
+## join连接查询
+
+* 目前clickhouse支持的join语句如下表两个部分组成（连接精度 + join类型）所示：
+
+  | 连接精度 | join类型           | 备注     |
+  | -------- | ------------------ | -------- |
+  |          | LEFT JOIN          | 外连接   |
+  | ALL      | RIGHT JOIN         | 外连接   |
+  | ANY      | FULL [OURTER] JOIN | 外连接   |
+  | ASOF     | INNER JOIN         | 内连接   |
+  |          | CROSS JOIN         | 交叉连接 |
+
+  其中，连接精度和join类型可以任意组合，即可以有15种选择。
+
+### join连接测试
+
+* 数据准备
+
+  分别在clickhosue命令行客户端中，执行如下sql语句，创建三张表并插入对应的数据：
+
+  ```sql
+  -- 创建数据库
+  CREATE DATABASE IF NOT EXISTS tmp_my_database;
+  
+  -- 指定数据库
+  USE tmp_my_database;
+  
+  -- 创建表join_tb1
+  CREATE TABLE tmp_my_database.join_tb1(`id` UInt32, `name` String, `time` DateTime) ENGINE = MergeTree() ORDER BY (id) PRIMARY KEY (id);
+  
+  -- 向join_tb1插入数据 (id传入的是null，最终会用UInt32的默认值0填充)
+  INSERT INTO tmp_my_database.join_tb1 VALUES (1, 'ClickHouse', '2019-05-01 12:00:00'), (2, 'Spart', '2019-05-01 12:30:00'), (3, 'ElasticSearch', '2019-05-01 13:00:00'), (4, 'HBase', '2019-05-01 13:30:00'), (NULL, 'ClickHouse', '2019-05-01 12:00:00'), (NULL, 'Spark', '2019-05-01 12:30:00');
+  
+  -- 创建表 join_tb2
+  CREATE TABLE tmp_my_database.join_tb2(`id` UInt32, `rate` UInt32, `time` DateTime) ENGINE = MergeTree() ORDER BY (id) PRIMARY KEY (id);
+      
+  -- 向join_tb2插入数据
+  INSERT INTO tmp_my_database.join_tb2 VALUES (1, 100, '2019-05-01 11:55:00'), (2, 39, '2019-05-01 12:01:00'), (3, 80, '2019-05-01 13:10:00'), (5, 70, '2019-05-01 14:00:00'), (6, 60, '2019-05-01 13:50:00');
+  
+  -- 创建表 join_tb3
+  CREATE TABLE tmp_my_database.join_tb3 (`id` UInt32, `star` UInt32) ENGINE = MergeTree() ORDER BY (id) PRIMARY KEY (id);
+      
+  -- 向join_tb3插入数据
+  INSERT INTO tmp_my_database.join_tb3 VALUES (1, 1000), (2, 900), (3, 80), (5, 70), (6, 60);
+  ```
+
+#### 连接精度
+
+##### ALL测试
+
+* **概念（特性）**：如果左表内的一行数据，在右表中有多行数据与之连接匹配，则返回右表中全部连接的数据，而判断连接匹配的依据是左表与右表内的数据，基于连接建（JOIN KEY）的取值完全相等，等同于left.key = right.key
+
+* 测试sql与结果：
+
+  ```sql
+  SELECT a.id, a.name, b.rate FROM join_tb1 AS a ALL INNER JOIN join_tb2 AS b ON a.id = b.id;
+  ```
+
+  ![JOIN-ALL.png](JOIN-ALL.png)
+
+  根据截图中的结果来看，返回的结果**全是右表中符合条件a.id = b.id的数据**，可以做个实验，若join_tb2中存在两个id为1（**clickhouse允许主键相同的数据存在多条**）的数据，看结果是怎样的？其对应实验的sql及结果如下所示：
+
+  ```SQL
+  -- 补充id为1的数据至join_tb2表中，保证有两个id为1的数据
+  INSERT INTO join_tb2 VALUES (1, 105, '2019-05-01 11:58:00');
+  
+  -- 再次查询
+  SELECT a.id, a.name, b.rate FROM join_tb1 AS a ALL INNER JOIN join_tb2 AS b ON a.id = b.id;
+  ```
+
+  ![JOIN-ALL-2.png](JOIN-ALL-2.png)
+
+  感觉结果有点像MySQL的**LEFT JOIN**的特性。
+
+##### ANY 测试
+
+* 概念（特性）：如果坐标内的一行数据，在右表中有多行数据与之数据匹配，则仅返回右表中第一行连接的数据。
+
+* 测试sql与结果：
+
+  ```sql
+  SELECT a.id, a.name, b.rate FROM join_tb1 AS a ANY INNER JOIN join_tb2 AS b ON a.id = b.id;
+  ```
+
+  ![ANY-ALL.png](ANY-ALL.png)
+
+  与ALL相反，ALL能获取右表中符合条件的所有数据。而ANY只能获取到右表中符合条件的第一条数据（尽管有多条数据符合）。有点像MySQL的**INNER JOIN**的特性
+
+##### ASOF测试
+
+* 概念（特性）：ASOF是一种模糊连接，它允许在连接件之后追加定义一个模糊连接的匹配条件asof_column。
+
+* 测试sql与结果：
+
+  ```sql
+  SELECT a.id, a.name, b.rate, a.time AS aTime, b.time AS bTime FROM join_tb1 AS a ASOF INNER JOIN join_tb2 AS b ON a.id = b.id AND a.time >= b.time;
+  ```
+
+  ![ASOF.png](ASOF.png)
+
+  由结果可知，asof后面除了有寻常的连接键以外，还多出了一个条件a.time >= b.time。 这就与MySQL一样，外连接之后，还可以用where关键字对连接后的数据做一次筛选。ASOF支持使用**USING**的简写形式，USING后生命的最后一个字段会被自动转换成asof_column模糊连接条件。例如，上面的ASOF测试sql用USING简写模式改版后，会变成下面这个样子：
+
+  ```sql
+  SELECT a.id, a.name, b.rate, a.time AS aTime, b.time AS bTime FROM join_tb1 AS a ASOF INNER JOIN join_tb2 AS b USING(id, time);
+  ```
+
+  用USING关键字改版后的查询结果与未改版之前**完全一致！**，但asof_column有两点需要注意：
+
+  1. asof_column 必须是整形、浮点型和日期型这类有序序列的数据类型。（因此，使用String类型的字段作为asof_column，会报错。其报错的内容为：**Code: 403. DB::Exception: Received from localhost:9000. DB::Exception: No inequality in ASOF JOIN ON section..**，我这里测试时，clickhouse安装在本机，所以上面提示的是localhost:9000）
+  2. asof_column不能是数据表内的唯一字段，换言之，连接键（JOIN KEY）和asof_column不能是同一个字段
+
+
+
+### 连接类型
+
+#### INNER（内连接）
+
+* 概念（特性）：与MySQL的inner连接查询一致，最终是将连接键相同的数据都筛选出来，即交集。
+
+#### OUTER（外连接）
+
+##### LEFT
+
+* 概念（特性）：与MySQL的左外连接查询类似，但有一点不相同的就是，当右表中没有找到连接的行，**则会采用相应字段数据类型的默认值填充**
+
+* 查询sql及结果演示：
+
+  ```sql
+  SELECT a.id, a.name, b.rate FROM join_tb1 AS a LEFT OUTER JOIN join_tb2 AS b ON a.id = b.id;
+  ```
+
+  ![LEFT-OUTER-JOIN.png](LEFT-OUTER-JOIN.png)
+
+  因为右表（join_tb2）中的rate类型为UInt32，且左表（join_tb1）的id不包含3和4，因此，会用默认值0来填充rate。**通过上述查询语句可知，右表中没有包含id为0和id为4的数据。**
+
+##### RIGHT
+
+* 概念（特性）：与MySQL的右外连接查询类似。然后与clickhouse的左外连接类似，以右表为主，**左表中不存在的数据则以对应数据类型的默认值填充**
+
+* 执行流程：
+
+  > 1、在内部使用类似INNER JOIN的内连接查询，在计算交集部分的同事，顺带记录右表中那些未能被连接的数据行。
+  >
+  > 2、将那些未能被连接的数据行追加到交集的尾部
+  >
+  > 3、将追加数据中那些属于左表的列字段用默认值补全
+
+* 查询sql及结果演示：
+
+  ```sql
+  SELECT a.id, a.name, b.rate FROM join_tb1 AS a RIGHT JOIN join_tb2 AS b ON a.id = b.id;
+  ```
+
+  ![RIGHT-OUTER-JOIN.png](RIGHT-OUTER-JOIN.png)
+
+##### FULL
+
+* 概念（特性）：与MySQL的全外连接查询类似，查询出来的是并集。
+
+* 执行流程：
+
+  > 1、内部进行类似**LEFT JOIN** 的查询，在左外连接的过程中，顺带记录右表中已经被连接的数据行
+  >
+  > 2、通过在右表中记录已被连接的数据行，得到未被连接的数据行
+  >
+  > 3、将右表中未被连接的数据追加至结果集，**并将那些属于左表中的列字段以默认值补全**
+
+* 查询sql及结果演示：
+
+  ```sql
+   SELECT a.id, a.name, b.rate FROM join_tb1 AS a FULL JOIN join_tb2 AS b ON a.id = b.id;
+  ```
+
+  ![FULL-OUTER-JOIN.png](FULL-OUTER-JOIN.png)
