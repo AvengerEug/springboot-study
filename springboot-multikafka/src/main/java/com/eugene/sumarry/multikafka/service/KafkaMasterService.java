@@ -2,6 +2,7 @@ package com.eugene.sumarry.multikafka.service;
 
 import com.eugene.sumarry.multikafka.config.KafkaPropertiesAutoConfiguration;
 import com.eugene.sumarry.multikafka.constants.Constants;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -30,8 +31,8 @@ public class KafkaMasterService {
 
 
     @KafkaListener(containerFactory = Constants.KAFKA_MASTER, topics = "kafka.master.topic")
-    public void handler(String content) {
-        System.out.println(content);
+    public void handler(Object record) {
+        System.out.println(record);
     }
 
 }

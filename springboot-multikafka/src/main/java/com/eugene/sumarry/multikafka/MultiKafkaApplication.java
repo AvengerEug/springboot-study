@@ -16,6 +16,7 @@ public class MultiKafkaApplication {
         KafkaMasterService bean = run.getBean(KafkaMasterService.class);
         KafkaTemplate slaveKafkaTemplate = (KafkaTemplate) run.getBean("slaveKafkaTemplate");
         KafkaTemplate masterKafkaTemplate = (KafkaTemplate) run.getBean("masterKafkaTemplate");
+        run.getBean(KafkaMasterService.class).send();
         System.out.println(1);
     }
 }
