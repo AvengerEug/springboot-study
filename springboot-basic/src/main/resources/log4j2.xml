@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--日志级别以及优先级排序: OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL -->
+<!--Configuration后面的status，这个用于设置log4j2自身内部的信息输出，可以不设置，当设置成trace时，你会看到log4j2内部各种详细输出-->
+<!--monitorInterval：Log4j能够自动检测修改配置 文件和重新配置本身，设置间隔秒数。如果配置没改动的话，这个参数相当于没有用-->
+<configuration status="WARN" monitorInterval="30">
+
+    <!--先定义所有的appender-->
+    <appenders>
+        <!--这个输出到控制台的配置-->
+        <console name="Console" target="SYSTEM_OUT">
+            <!--输出日志的格式 输出到毫秒时间：%d{HH:mm:ss:SSS}-->
+            <!-- %p: 输出当前日志等级 -->
+            <!-- %t: 输出当前线程名称。如果是异步打印日志，则此参数可以很容易判别出来 -->
+            <!-- %l: 输出打印日志的行号 -->
+            <!-- %m: 输出打印日志的方法名 -->
+            <!-- %n: 需要换行 -->
+            <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] [%t] - %l - %m%n"/>
+        </console>
+
+        <!-- ${sys:user.home} 对应linux ~ 的路径。可以执行echo ~ 命令查看路径是什么 -->
+        <!-- 
+					name: 表示当前appender的名称，
+          fileName: 表示当前append对应的日志文件
+          filePattern: 文件规则
+          append: 重启后，是否把新日志追加到日志文件中
+				-->
+        <RollingFile name="biz.log" fileName="${sys:user.home}/springboot-basic/logs/biz.log"
+                     filePattern="${sys:user.home}/springboot-basic/logs/$${date:yyyy-MM}/biz-%d{yyyy-MM-dd}-%i.log"
+                     append="true"
+                     immediateFlush="false">
+            <!-- 
+              level：表示只针对此级别
+							onMatch="ACCEPT" 表示匹配该级别即以上
+							onMatch="DENY"   表示不匹配该级别即以上
+
+              onMismatch="ACCEPT" 表示匹配该级别即以下
+              onMismatch="DENY" 表示不匹配该级别即以下
+  						通常我们都是用level指定级别，因此onMatch和onMismatch都可以不填
+						-->
+            <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!-- 表示当前append打印日志的格式, 用|划线隔开 -->
+            <PatternLayout pattern="[%d{HH:mm:ss:SSS}]|[%p]|[%t]|%l||%m%n"/>
+            <!-- 表示日志分隔政策
+ 							TimeBasedTriggeringPolicy：
+  							interval:单位是分钟，表示每隔这么多分钟完成日志的分隔（拆分）
+                modulate: 如果设置为 true，则表示滚动时间间隔是基于上一次滚动的时间来计算的，而不是固定的时间间隔。例如，如果设置为 true 并且 interval 设置为 60，则表示每隔一小时就会滚动一次日志文件，但是如果上一次滚动是在 59 分钟前进行的，则下一次滚动将在 1 分钟后进行。
+               
+
+							这个配置表示的业务语义：每隔1分钟触发一次业务日志滚动。或者当日志达到10MB后，完成一次日志拆分操作。
+            -->
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <!-- 拆分后的文件，最多只能保持20个 -->
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+
+        <!--
+            immediateFlush: 如果使用异步日志的话，内部是有一个时间片和槽的机制。会分批刷新到磁盘中。
+
+            槽的容量大小：256 * 1024位，参考官方的系统变量配置：AsyncLoggerConfig.RingBufferSize
+            超时时间：10ms，参考官方的系统变量配置：AsyncLoggerConfig.WaitStrategy
+            这两个参数设置需要谨慎，如果设置的不好，容易造成日志存储在槽中，占用jvm内存。导致频繁gc
+         -->
+        <RollingFile name="application.log" fileName="${sys:user.home}/springboot-basic/logs/application.log"
+                     filePattern="${sys:user.home}/springboot-basic/logs/$${date:yyyy-MM}/application-%d{yyyy-MM-dd}-%i.log"
+                     append="true"
+                     immediateFlush="false">
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] [%t] - %l - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="2 MB"/>
+            </Policies>
+        </RollingFile>
+    </appenders>
+
+    <!--定义logger，只有定义了logger并引入的appender，才能开始打印日志-->
+    <loggers>
+        <!-- biz 业务日志打印位置 -->
+        <!-- additivity="false" 是否将当前日志传递给祖先，如果设置为true，则也会触发root的日志规则 -->
+        <!-- includeLocation="true" 表示将当前日志的类名 + 方法名传递给append中，再配合append中的%l可以输出打印这行日志的地方 -->
+        <logger name="bizInfo" level="warn" additivity="false" includeLocation="true">
+            <appender-ref ref="biz.log"/>
+        </logger>
+
+        <root level="info" includeLocation="true">
+            <appender-ref ref="Console" />
+            <appender-ref ref="application.log"/>
+        </root>
+    </loggers>
+
+</configuration>

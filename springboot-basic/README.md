@@ -330,3 +330,90 @@
 |    @ConditionalOnBean     |          表示当某个bean存在后才处理当前bean           | 比如mybati的自动配置类: MybatisAutoConfiguration. 该类添加了@ConditionalOnBean(DataSource.class)注解，即表示当有数据源这个bean时才处理MybatisAutoConfiguration这个bean |
 |    @ConditionalOnClass    | 表示当某个类存在(在classpath中找得到)时才处理当前bean | 比如mybati的自动配置类: MybatisAutoConfiguration。该类添加了@ConditionalOnClass({ SqlSessionFactory.class, SqlSessionFactoryBean.class })。表示当classpath中有这两个类时菜处理这个bean |
 | @ConditionalOnMissingBean |          表示当spring环境中无某个类时才处理           | @ConditionalOnMissingBean注解中若没有传class进去，那么则默认认为无当前bean时才处理。eg:@Bean @ConditionalOnMissingBean public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory){....}. 则表示，spring容器中无SqlSessionTemplate这个类型的bean时才执行这个方法 |
+
+## 五、springboot-basic项目的日志特性
+
+* 参考log4j2.xml文件，一共有两个loggers，分别为bizInfo和root。当我们使用如下代码打印日志时：
+
+  ```java
+  private static final Logger LOGGER = LoggerFactory.getLogger("bizInfo");
+  ```
+
+  会使用名称为bizInfo的logger，以及logger关联的append：biz.log。最终发现，logger和append设置的都是warn级别的日志：
+
+  ```xml
+  <!-- append: -->
+  <RollingFile name="biz.log" fileName="${sys:user.home}/springboot-basic/logs/biz.log"
+                       filePattern="${sys:user.home}/springboot-basic/logs/$${date:yyyy-MM}/biz-%d{yyyy-MM-dd}-%i.log"
+                       append="true">
+      <!-- 
+        level：表示只针对此级别
+                      onMatch="ACCEPT" 表示匹配该级别即以上
+                      onMatch="DENY"   表示不匹配该级别即以上
+  
+        onMismatch="ACCEPT" 表示匹配该级别即以下
+        onMismatch="DENY" 表示不匹配该级别即以下
+                  通常我们都是用level指定级别，因此onMatch和onMismatch都可以不填
+                  -->
+      <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+  </RollingFile>
+  
+  <!-- logger -->
+  <logger name="bizInfo" level="warn" additivity="false">
+      <appender-ref ref="biz.log"/>
+  </logger>
+  ```
+
+  最终发现日志文件在：**${sys:user.home}/springboot-basic/logs/biz.log** 下。而${sys:user.home}代表啥意思呢？可以在linux系统或git bash环境下：执行如下命令
+
+  ```shell
+  echo ~
+  # 输出结果：/c/Users/avengerEug
+  ```
+
+* 当我们使用其他方式获取logger对象时：
+
+  ```java
+  private static final Logger LOGGER = LoggerFactory.getLogger(ThreadLocalController.class);
+  ```
+
+  则会默认使用root的logger配置来打印日志
+
+  ```xml
+  <root level="info">
+      <appender-ref ref="Console" />
+      <appender-ref ref="application.log"/>
+  </root>
+  ```
+
+  最终会打印到Console和application.log的append中。其中Console配置的是控制台的输出，application.log配置的是**${sys:user.home}/springboot-basic/logs/application.log**日志
+
+* 当我们需要使用log4j2的异步功能时，需要执行如下操作：
+
+  1. 添加对应的异步二方包（log4j底层是依赖这个二方包）：
+
+     ```xml
+     <dependency>
+         <groupId>com.lmax</groupId>
+         <artifactId>disruptor</artifactId>
+         <version>3.3.4</version>
+     </dependency>
+     ```
+
+  2. 添加系统变量，有很多方式添加：
+
+     1. 通过log4j2的配置文件添加。方式：在classpath下添加`log4j2.component.properties`
+     2. 在启动java jar包时，添加jvm变量
+     3. 在代码中使用System.setProperty接口添加变量
+
+     具体有哪些提供变量呢？参考官方：[Log4j – Log4j 2 Lock-free Asynchronous Loggers for Low-Latency Logging - Apache Log4j 2](http://home.apache.org/~rpopma/log4j/2.6/manual/async.html)   使用关键字：`System Properties to configure all asynchronous loggers` 查找表格。
+
+     最重要的变量为（以System.setProperty接口添加变量为例）：
+
+     ```java
+     // 此变量表示要开启异步打印日志
+     System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+     ```
+
+  3. 如何验证是否为异步？一开始我是想通过日志中的线程名来判断，再经过一番折腾后，发现这种方式不行。因为，异步打印日志前，log4j2会把当前业务线程传递到log4j2的异步线程中去，最后是以业务线程为准。那我们要怎么去验证？只能使用最原始的方式：debug查看logger对象![image-20231223145105112](.\image-20231223145105112.png)
+
