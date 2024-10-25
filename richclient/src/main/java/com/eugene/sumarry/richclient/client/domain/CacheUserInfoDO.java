@@ -9,6 +9,9 @@ import java.io.Serializable;
 public class CacheUserInfoDO implements Serializable {
     private String id;
 
+    public CacheUserInfoDO() {
+    }
+
     public CacheUserInfoDO(String id) {
         this.id = id;
     }

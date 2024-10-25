@@ -23,5 +23,11 @@ public @interface Cached {
      */
     String cacheKey();
 
+    /**
+     * 过期时间，单位为s
+     * @return
+     */
+    String expireTime() default "";
+
 
 }

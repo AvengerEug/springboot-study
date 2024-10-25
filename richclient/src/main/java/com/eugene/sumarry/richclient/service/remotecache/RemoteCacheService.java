@@ -4,19 +4,21 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ * 构建一个缓存的请求对象。方便使用
+ *
  * @author muyang
  * @create 2024/10/25 11:25
  */
 public interface RemoteCacheService {
 
-    boolean set(String key, Serializable value);
+    RemoteResult set(String key, Serializable value, Long expireTime);
 
-    <T> T get(String key, Serializable value);
+    RemoteResult get(String key);
 
-    boolean putList(String key, List<?> value);
+    RemoteResult putList(String key, List<?> value, Long expireTime);
 
-    <T> T getList(String key);
+    RemoteResult getList(String key);
 
-    boolean remove(String key);
+    RemoteResult remove(String key);
 
 }

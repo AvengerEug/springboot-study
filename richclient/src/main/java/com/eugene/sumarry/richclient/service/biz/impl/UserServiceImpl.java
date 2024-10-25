@@ -17,7 +17,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     @Override
-    @Cached(cacheKey = "", operator = CacheOperateType.GET)
+    @Cached(cacheKey = "", operator = CacheOperateType.GET, expireTime = "500")
     public List<CacheUserInfoDO> list(String key) {
         List<CacheUserInfoDO> result = new ArrayList<>();
         result.add(new CacheUserInfoDO(Math.random() + ""));

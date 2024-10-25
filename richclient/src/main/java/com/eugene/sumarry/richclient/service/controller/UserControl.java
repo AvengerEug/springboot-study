@@ -1,10 +1,11 @@
-package com.eugene.sumarry.richclient.service;
+package com.eugene.sumarry.richclient.service.controller;
 
 import com.eugene.sumarry.richclient.client.domain.CacheUserInfoDO;
 import com.eugene.sumarry.richclient.service.biz.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -23,13 +24,13 @@ public class UserControl {
 
 
     @GetMapping("/list")
-    public List<CacheUserInfoDO> list(String key) {
+    public List<CacheUserInfoDO> list(@RequestParam(name = "key", defaultValue = "test") String key) {
         return userService.list(key);
     }
 
 
     @GetMapping("/update")
-    public void insertOrUpdate(String key) {
+    public void insertOrUpdate(@RequestParam(name = "key", defaultValue = "test") String key) {
         userService.insertOrUpdate(key);
     }
 
