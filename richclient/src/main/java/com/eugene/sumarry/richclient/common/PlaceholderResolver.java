@@ -1,4 +1,4 @@
-package com.eugene.sumarry.richclient.service.anno;
+package com.eugene.sumarry.richclient.common;
 
 import org.springframework.util.PropertyPlaceholderHelper;
 

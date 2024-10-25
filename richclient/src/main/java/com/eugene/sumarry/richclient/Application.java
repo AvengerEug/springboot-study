@@ -1,4 +1,4 @@
-package com.eugene.sumarry.richclient.service;
+package com.eugene.sumarry.richclient;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

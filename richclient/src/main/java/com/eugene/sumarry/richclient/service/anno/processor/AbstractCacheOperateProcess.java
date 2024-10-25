@@ -2,7 +2,7 @@ package com.eugene.sumarry.richclient.service.anno.processor;
 
 import com.eugene.sumarry.richclient.service.anno.CacheOperateType;
 import com.eugene.sumarry.richclient.service.anno.Cached;
-import com.eugene.sumarry.richclient.service.anno.PlaceholderResolver;
+import com.eugene.sumarry.richclient.common.PlaceholderResolver;
 import com.eugene.sumarry.richclient.service.remotecache.RemoteCacheService;
 import com.eugene.sumarry.richclient.service.remotecache.RemoteResult;
 import org.aspectj.lang.ProceedingJoinPoint;
