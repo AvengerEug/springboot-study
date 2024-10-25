@@ -18,6 +18,7 @@
         <module>auto-configure</module>
         <module>springboot-clickhouse</module>
         <module>springboot-multikafka</module>
+        <module>richclient</module>
     </modules>
 
     <groupId>com.eugene.sumarry</groupId>
