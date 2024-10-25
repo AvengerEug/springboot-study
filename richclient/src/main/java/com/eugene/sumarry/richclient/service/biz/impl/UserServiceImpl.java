@@ -17,7 +17,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     @Override
-    @Cached(cacheKey = "", operator = CacheOperateType.GET, expireTime = "500")
+    @Cached(cacheKey = "user_${0}", operator = CacheOperateType.GET, expireTime = "500")
     public List<CacheUserInfoDO> list(String key) {
         List<CacheUserInfoDO> result = new ArrayList<>();
         result.add(new CacheUserInfoDO(Math.random() + ""));
@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Cached(cacheKey = "", operator = CacheOperateType.DELETE)
+    @Cached(cacheKey = "user_${0}", operator = CacheOperateType.DELETE)
     public void insertOrUpdate(String key) {
         // 更新数据库
         System.out.println("模拟更新数据库");
